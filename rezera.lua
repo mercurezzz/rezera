@@ -226,7 +226,7 @@ end
 
 -- UI TOGGLE (with INDEX added back)
 local HighlightToggle = MainGroupBox:CreateToggle({
-    Name = "Blue Player Highlights",
+    Name = "Highlight Esp",
     CurrentValue = false,
     Style = 2,
     Callback = function(Value)
@@ -312,7 +312,7 @@ end
 
 -- UI Toggle
 local TextESPToggle = MainGroupBox:CreateToggle({
-    Name = "Text Above Players",
+    Name = "Text Esp",
     CurrentValue = false,
     Style = 2,
     Callback = function(Value)
@@ -618,3 +618,102 @@ local FishToggle = AfkGroupBox:CreateToggle({
         end
     end,
 }, "INDEX")
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+local beamEnabled = false
+local beamConnection = nil
+local currentBeam = nil
+
+local function getNearestPlayer()
+    local closest, closestDist = nil, math.huge
+    local myChar = LocalPlayer.Character
+    local myHRP = myChar and myChar:FindFirstChild("HumanoidRootPart")
+    if not myHRP then return nil end
+
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer then
+            local char = plr.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                local dist = (myHRP.Position - hrp.Position).Magnitude
+                if dist < closestDist then
+                    closestDist = dist
+                    closest = plr
+                end
+            end
+        end
+    end
+
+    return closest
+end
+
+local function createBeam()
+    local myChar = LocalPlayer.Character
+    local myHRP = myChar and myChar:FindFirstChild("HumanoidRootPart")
+    if not myHRP then return end
+
+    local nearest = getNearestPlayer()
+    if not nearest or not nearest.Character then return end
+    local theirHRP = nearest.Character:FindFirstChild("HumanoidRootPart")
+    if not theirHRP then return end
+
+    -- Cleanup old beam
+    if currentBeam then
+        currentBeam:Destroy()
+    end
+
+    -- Create attachments
+    local att1 = Instance.new("Attachment", myHRP)
+    att1.Name = "BeamAtt1"
+
+    local att2 = Instance.new("Attachment", theirHRP)
+    att2.Name = "BeamAtt2"
+
+    -- Create beam
+    local beam = Instance.new("Beam")
+    beam.Attachment0 = att1
+    beam.Attachment1 = att2
+    beam.FaceCamera = true
+    beam.Width0 = 0.15
+    beam.Width1 = 0.15
+    beam.Color = ColorSequence.new(Color3.fromRGB(0, 255, 0))
+    beam.LightEmission = 1
+    beam.LightInfluence = 0
+    beam.Parent = myHRP
+
+    currentBeam = beam
+end
+
+local function stopBeam()
+    if beamConnection then
+        beamConnection:Disconnect()
+        beamConnection = nil
+    end
+    if currentBeam then
+        currentBeam:Destroy()
+        currentBeam = nil
+    end
+end
+
+-- 🟢 WINDUI TOGGLE
+local BeamToggle = MainGroupBox:CreateToggle({
+    Name = "Snapline",
+    CurrentValue = false,
+    Style = 2,
+    Callback = function(Value)
+        beamEnabled = Value
+
+        if Value then
+            -- Start updating live
+            beamConnection = RunService.RenderStepped:Connect(function()
+                createBeam()
+            end)
+        else
+            -- Stop & remove beam
+            stopBeam()
+        end
+    end,
+}, "BEAM_TOGGLE")
