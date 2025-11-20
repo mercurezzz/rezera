@@ -1,0 +1,76 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+local HRP = Character:WaitForChild("HumanoidRootPart")
+
+local PLOTS = workspace:WaitForChild("Plots")
+local SPEED = 28
+
+-- EXACT text we expect on the plot sign (case-sensitive)
+local TARGET_TEXT = LocalPlayer.DisplayName .. "'s Base"
+
+
+-- Search for the plot whose sign contains EXACT matching text
+local function findMyPlot()
+    for _, plot in ipairs(PLOTS:GetChildren()) do
+        local sign = plot:FindFirstChild("PlotSign")
+        if sign then
+            for _, d in ipairs(sign:GetDescendants()) do
+                if d:IsA("TextLabel") then
+                    -- Exact match, including casing
+                    if d.Text == TARGET_TEXT then
+                        return plot
+                    end
+                end
+            end
+        end
+    end
+    return nil
+end
+
+
+-- Movement using MoveDirection + velocity
+local function moveTo(targetPos)
+    local conn
+
+    conn = RunService.Heartbeat:Connect(function(dt)
+        if not Character or not HRP then
+            conn:Disconnect()
+            return
+        end
+
+        local direction = targetPos - HRP.Position
+        local flat = Vector3.new(direction.X, 0, direction.Z)
+        local dist = flat.Magnitude
+
+        if dist < 5 then
+            HRP.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            Humanoid:Move(Vector3.new())
+            conn:Disconnect()
+            return
+        end
+
+        -- MoveDirection = aim
+        Humanoid:Move(flat.Unit)
+
+        -- Velocity = actual movement speed
+        HRP.AssemblyLinearVelocity = flat.Unit * SPEED
+    end)
+end
+
+
+-- MAIN
+local myPlot = findMyPlot()
+if myPlot then
+    local spawn = myPlot:FindFirstChild("Spawn")
+    if spawn then
+        moveTo(spawn.Position)
+    else
+        warn("Your plot was found but 'Spawn' doesn't exist.")
+    end
+else
+    warn("No plot found with text: " .. TARGET_TEXT)
+end
