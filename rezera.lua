@@ -160,7 +160,7 @@ RunService.RenderStepped:Connect(function()
         if speedEnabled then
             local dir = humanoid.MoveDirection
             if dir.Magnitude > 0 then
-                local moveVelocity = dir.Unit * 32
+                local moveVelocity = dir.Unit * 29
                 hrp.Velocity = Vector3.new(moveVelocity.X, hrp.Velocity.Y, moveVelocity.Z)
                 humanoid.JumpPower = 35
             end
@@ -197,3 +197,4 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         updateLockState()
     end
 end)
+
