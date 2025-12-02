@@ -6,6 +6,8 @@ local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 local Lighting = game:GetService("Lighting")
 
+Workspace.Gravity = 100
+
 -- === Avatar cleanup ===
 local function cleanAvatar(character)
     for _, acc in ipairs(character:GetChildren()) do
@@ -197,4 +199,5 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         updateLockState()
     end
 end)
+
 
