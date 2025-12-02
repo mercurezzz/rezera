@@ -55,38 +55,61 @@ ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 220, 0, 110)
-MainFrame.Position = UDim2.new(0.5, -110, 0.8, -55)
-MainFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+MainFrame.Size = UDim2.new(0, 240, 0, 130)
+MainFrame.Position = UDim2.new(0.5, -120, 0.8, -65)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
 MainFrame.BorderSizePixel = 0
 MainFrame.Parent = ScreenGui
 MainFrame.AnchorPoint = Vector2.new(0.5,0.5)
 
 local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0,15)
+UICorner.CornerRadius = UDim.new(0,20)
 UICorner.Parent = MainFrame
 
--- === Speed Button ===
-local SpeedButton = Instance.new("TextButton")
-SpeedButton.Size = UDim2.new(0,200,0,40)
-SpeedButton.Position = UDim2.new(0,10,0,10)
-SpeedButton.BackgroundColor3 = Color3.fromRGB(0,170,255)
-SpeedButton.TextColor3 = Color3.fromRGB(255,255,255)
-SpeedButton.Text = "Speed OFF"
-SpeedButton.BorderSizePixel = 0
-SpeedButton.Parent = MainFrame
+-- Glow effect using UIStroke
+local Glow = Instance.new("UIStroke")
+Glow.Parent = MainFrame
+Glow.Thickness = 3
+Glow.Color = Color3.fromRGB(0,255,255)
+Glow.Transparency = 0.5
+Glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
--- === Script Load Button ===
-local LoadButton = Instance.new("TextButton")
-LoadButton.Size = UDim2.new(0,200,0,40)
-LoadButton.Position = UDim2.new(0,10,0,60)
-LoadButton.BackgroundColor3 = Color3.fromRGB(0,255,128)
-LoadButton.TextColor3 = Color3.fromRGB(255,255,255)
-LoadButton.Text = "Load Scripts"
-LoadButton.BorderSizePixel = 0
-LoadButton.Parent = MainFrame
+-- === Buttons ===
+local function createButton(text, pos, color)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 220, 0, 50)
+    btn.Position = pos
+    btn.BackgroundColor3 = color
+    btn.TextColor3 = Color3.fromRGB(255,255,255)
+    btn.Text = text
+    btn.BorderSizePixel = 0
+    btn.Parent = MainFrame
 
--- === Make draggable ===
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0,15)
+    corner.Parent = btn
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Parent = btn
+    stroke.Color = Color3.fromRGB(0,255,255)
+    stroke.Thickness = 2
+    stroke.Transparency = 0.4
+
+    -- Hover effect
+    btn.MouseEnter:Connect(function()
+        stroke.Transparency = 0
+    end)
+    btn.MouseLeave:Connect(function()
+        stroke.Transparency = 0.4
+    end)
+
+    return btn
+end
+
+local SpeedButton = createButton("Speed OFF", UDim2.new(0,10,0,10), Color3.fromRGB(0,170,255))
+local LoadButton = createButton("Load Scripts", UDim2.new(0,10,0,70), Color3.fromRGB(0,255,128))
+
+-- === Make frame draggable ===
 local dragging = false
 local dragInput, dragStart, startPos
 
@@ -145,7 +168,7 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- === Load scripts button ===
+-- === Load Scripts Button ===
 LoadButton.MouseButton1Click:Connect(function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"))()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/pinkaroo/Scripts/refs/heads/main/SAB/AllSABLoadstrings"))()
